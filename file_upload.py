@@ -38,12 +38,12 @@ def lambda_handler(event, context):
         # Generate pre-signed s3 url
         url = s3_client.generate_presigned_url(
             'put_object',
-            {
+            Params={
                 "Bucket": BUCKET_NAME,
                 "Key": s3_key,
                 "ContentType": content_type
             },
-            PRESIGNED_URL_EXPIRY
+            ExpiresIn=PRESIGNED_URL_EXPIRY
         )
 
         # Save metadata to dynamodb
