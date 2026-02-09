@@ -21,9 +21,13 @@ def lambda_handler(event, context):
         size = event['Records'][0]['s3']['object']['size']
 
         # parse file_id from key (user_id/file_id-filename)
-        rest = s3_key.split("/", 1)
-        file = rest.rsplit("-", 1)
-        file_id = file[1]
+        uuid_pattern = r'([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})'
+        match = re.search(uuid_pattern, s3_key)
+        
+        if not match:
+            raise ValueError(f"Could not extract UUID from S3 key: {s3_key}")
+        
+        file_id = match.group(1)
 
         # Update dynamodb item
         table.update_item(
