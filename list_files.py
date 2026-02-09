@@ -8,17 +8,35 @@ This python program contains logic used in the list files lambda handler
 It reads file metadata from dynamodb and passes it on to the client
 """
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.table('secure-file')               # Replace with correct table name
+table = dynamodb.Table('secure-file')               # Replace with correct table name
 
 def lambda_handler(event, context):
     """
-    Read file metadata and pass on to client
+    Read file metadata and pass on to authenticated client
     """
     try:
-        # TODO Add logic here
-    
-    except ClientError as e:
+
+        user_id = event['requestContext']['authorizer']['claims']['sub']
+
+        # Query dynamodb using GSI on user_id
+        response = table.query(
+            IndexName = 'user_id-index',
+            KeyConditionExpression=Key('user_id').eq(user_id))
+
+        # Get files from response
+        files = response['Items']
+            
+        return {
+                'statusCode': 200,
+                'body': json.dumps({
+                    'files':files,
+                    'count': len(files)})
+            }
+        
+    except ClientError as e :
+        
         return {
             'statusCode': 500,
-            'body' : json.dumps({"error": "failed to generate upload URL"})
-        }
+            'body': json.dumps({"error": "Failed to fetch uploaded files"})
+        }    
+    
