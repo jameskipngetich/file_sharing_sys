@@ -2,3 +2,6 @@ file_sh_env/
 app.py
 requirements.txt
 lelkey.pem
+
+.terraform/
+.terraform.lock.hcl
